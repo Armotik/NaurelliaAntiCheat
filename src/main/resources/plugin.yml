@@ -1,0 +1,14 @@
+name: NaurelliaAntiCheat
+version: '${project.version}'
+main: fr.armotik.naurelliaanticheat.NaurelliaAntiCheat
+api-version: 1.19
+commands:
+  naurelliaLog:
+    description: display player's log
+    aliases:
+      - nlog
+  testnlog:
+    description: test command
+    permission: naurellia.admin
+    aliases:
+      - tlog
