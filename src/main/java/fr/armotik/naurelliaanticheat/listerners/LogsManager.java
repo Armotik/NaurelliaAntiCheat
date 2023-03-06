@@ -9,8 +9,11 @@ import java.util.List;
 
 public class LogsManager implements Listener {
 
+    private static final List<Logs> logs = new ArrayList<>();
     private static List<Logs> logs__join_quit = new ArrayList<>();
     private final static List<Logs> logs__chat = new ArrayList<>();
+    private final static List<Logs> logs__player_death = new ArrayList<>();
+    private final static List<Logs> logs__drop_items = new ArrayList<>();
 
     public LogsManager() {
 
@@ -23,5 +26,17 @@ public class LogsManager implements Listener {
 
     public static List<Logs> getLogs__chat() {
         return logs__chat;
+    }
+
+    public static List<Logs> getLogs() {
+        return logs;
+    }
+
+    public static List<Logs> getLogs__player_death() {
+        return logs__player_death;
+    }
+
+    public static List<Logs> getLogs__drop_items() {
+        return logs__drop_items;
     }
 }

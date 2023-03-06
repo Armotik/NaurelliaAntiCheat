@@ -3,14 +3,22 @@
 
 ---
 
-### Last Commit 
-> Init commit
+### Commits 
+```
+1- Initial commit
+2- Added toString() method in the Logs.java class, added LogsBlock.java class, LogsBlockInteract.java class, LogsDropItem.java class, LogsPlayerDeath.java class. Modified LogsChat.java, LogsJoinQuit.java, LogsType.java, EventManager.java and LogsManager.java.
+```
 
 ---
 
 This plugin have a log system, for the moment, the available logs are :
 - `joinLogs`
 - `quitLogs`
+- `chatLogs (including commands)`
+- `blockLogs (including block break and block place)`
+- `blockInteractLogs (including door, chest, etc...)`
+- `dropItemLogs`
+- `playerDeathLogs`
 
 ---
 

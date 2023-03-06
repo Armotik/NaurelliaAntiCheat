@@ -8,10 +8,10 @@ import java.util.UUID;
 
 public abstract class Logs {
 
-    private final UUID targetUUID;
-    private Date date;
-    private LogsType logsType;
-    private Location location;
+    protected final UUID targetUUID;
+    protected final Date date;
+    protected final LogsType logsType;
+    protected final Location location;
 
     public Logs(UUID targetUUID, Location location, LogsType logsType) {
         this.targetUUID = targetUUID;
@@ -29,23 +29,17 @@ public abstract class Logs {
         return date;
     }
 
-    public void setDate(Date date) {
-        this.date = date;
-    }
-
     public Location getLocation() {
         return location;
-    }
-
-    public void setLocation(Location location) {
-        this.location = location;
     }
 
     public LogsType getLogsType() {
         return logsType;
     }
 
-    public void setLogsType(LogsType logsType) {
-        this.logsType = logsType;
-    }
+    /**
+     * Return the logs in a string
+     * @return String
+     */
+    public abstract String toString();
 }

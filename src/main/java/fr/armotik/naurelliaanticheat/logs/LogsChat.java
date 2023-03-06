@@ -23,6 +23,7 @@ public class LogsChat extends Logs {
         }
 
         LogsManager.getLogs__chat().add(this);
+        LogsManager.getLogs().add(this);
     }
 
     public String getMessage() {
@@ -31,5 +32,20 @@ public class LogsChat extends Logs {
 
     public void setMessage(String message) {
         this.message = message;
+    }
+
+    /**
+     * Return the logs in a string
+     * @return String
+     */
+    @Override
+    public String toString() {
+        return "LogsChat{" +
+                "targetUUID=" + targetUUID +
+                ", date=" + date +
+                ", logsType=" + logsType +
+                ", location=" + location +
+                ", message='" + message + '\'' +
+                '}';
     }
 }
