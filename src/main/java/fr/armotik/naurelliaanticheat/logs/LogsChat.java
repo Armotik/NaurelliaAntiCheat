@@ -40,12 +40,12 @@ public class LogsChat extends Logs {
      */
     @Override
     public String toString() {
-        return "LogsChat{" +
+        return "LogsChat:{" +
                 "targetUUID=" + targetUUID +
                 ", date=" + date +
                 ", logsType=" + logsType +
                 ", location=" + location +
                 ", message='" + message + '\'' +
-                '}';
+                "},";
     }
 }

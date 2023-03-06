@@ -27,7 +27,7 @@ public class LogsBlockInteract extends Logs{
      */
     @Override
     public String toString() {
-        return "LogsBlockInteract{" +
+        return "LogsBlockInteract:{" +
                 "targetUUID=" + targetUUID +
                 ", date=" + date +
                 ", logsType=" + logsType +
@@ -35,7 +35,7 @@ public class LogsBlockInteract extends Logs{
                 ", material=" + material +
                 ", blockLocation=" + blockLocation +
                 ", action=" + action +
-                '}';
+                "},";
     }
 
     public Material getMaterial() {

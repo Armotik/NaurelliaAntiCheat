@@ -22,14 +22,14 @@ public class LogsBlock extends Logs{
      */
     @Override
     public String toString() {
-        return "LogsBlock{" +
+        return "LogsBlock:{" +
                 "targetUUID=" + targetUUID +
                 ", date=" + date +
                 ", logsType=" + logsType +
                 ", location=" + location +
                 ", material=" + material +
                 ", blockLocation=" + blockLocation +
-                '}';
+                "},";
     }
 
     public Material getMaterial() {

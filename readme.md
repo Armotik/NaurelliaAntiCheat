@@ -3,10 +3,11 @@
 
 ---
 
-### Commits 
+### Commits
 ```
 1- Initial commit
 2- Added toString() method in the Logs.java class, added LogsBlock.java class, LogsBlockInteract.java class, LogsDropItem.java class, LogsPlayerDeath.java class. Modified LogsChat.java, LogsJoinQuit.java, LogsType.java, EventManager.java and LogsManager.java.
+3- Added Tests package, including Tests.java class, logs test package with TestLogsJoinQuit.java class and TestLogsPlayerDeath.jave class. Modified toString() method for classes which extends Logs.java class.
 ```
 
 ---
@@ -26,9 +27,9 @@ This plugin have a log system, for the moment, the available logs are :
 
 - `/nlog <player>` : All player's log
 - `/nlog <player> <option> <args>` : Player's log filter
-    - `/nlog <player> radius <radius>` : Player's log inside a given radius
-    - `/nlog <player> world <world>` : Player's log inside a given world
-    - `/nlog <player> location` : Player's log where the command is executed
-    - `/nlog <player> event <event name>`
+  - `/nlog <player> radius <radius>` : Player's log inside a given radius
+  - `/nlog <player> world <world>` : Player's log inside a given world
+  - `/nlog <player> location` : Player's log where the command is executed
+  - `/nlog <player> event <event name>`
 
 ---

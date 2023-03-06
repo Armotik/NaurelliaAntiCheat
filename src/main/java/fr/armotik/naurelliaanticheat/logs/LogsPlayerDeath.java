@@ -42,7 +42,7 @@ public class LogsPlayerDeath extends Logs {
      */
     @Override
     public String toString() {
-        return "LogsPlayerDeath{" +
+        return "LogsPlayerDeath:{" +
                 "targetUUID=" + targetUUID +
                 ", date=" + date +
                 ", logsType=" + logsType +
@@ -50,6 +50,6 @@ public class LogsPlayerDeath extends Logs {
                 ", killer=" + killer +
                 ", deathMessage='" + deathMessage + '\'' +
                 ", deathCause='" + deathCause + '\'' +
-                '}';
+                "},";
     }
 }

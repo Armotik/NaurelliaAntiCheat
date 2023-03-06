@@ -19,11 +19,11 @@ public class LogsJoinQuit extends Logs{
      */
     @Override
     public String toString() {
-        return "LogsJoinQuit{" +
+        return "LogsJoinQuit:{" +
                 "targetUUID=" + targetUUID +
                 ", date=" + date +
                 ", logsType=" + logsType +
                 ", location=" + location +
-                '}';
+                "},";
     }
 }

@@ -36,13 +36,13 @@ public class LogsDropItems extends Logs {
      */
     @Override
     public String toString() {
-        return "LogsDropItems{" +
+        return "LogsDropItems:{" +
                 "targetUUID=" + targetUUID +
                 ", date=" + date +
                 ", logsType=" + logsType +
                 ", location=" + location +
                 ", itemStack=" + itemStack +
                 ", dropLocation=" + dropLocation +
-                '}';
+                "},";
     }
 }

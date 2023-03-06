@@ -34,7 +34,13 @@ public class EventManager implements Listener {
 
     @EventHandler
     public void onPlayerDeath(PlayerDeathEvent event) {
-        new LogsPlayerDeath(event.getEntity().getUniqueId(), event.getEntity().getLastDeathLocation(), LogsType.LOG__DEATH_PLAYER, event.getEntity().getKiller(),event.getDeathMessage(), Objects.requireNonNull(event.getEntity().getLastDamageCause()).getCause().name());
+
+        if (event.getEntity().getLastDamageCause() != null) {
+
+            new LogsPlayerDeath(event.getEntity().getUniqueId(), event.getEntity().getLastDeathLocation(), LogsType.LOG__DEATH_PLAYER, event.getEntity().getKiller(),event.getDeathMessage(), Objects.requireNonNull(event.getEntity().getLastDamageCause()).getCause().name());
+        }
+
+        new LogsPlayerDeath(event.getEntity().getUniqueId(), event.getEntity().getLastDeathLocation(), LogsType.LOG__DEATH_PLAYER, event.getEntity().getKiller(),event.getDeathMessage(), "UNKNOWN");
     }
 
     @EventHandler
