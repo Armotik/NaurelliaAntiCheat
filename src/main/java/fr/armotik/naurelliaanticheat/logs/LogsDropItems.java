@@ -4,6 +4,7 @@ import fr.armotik.naurelliaanticheat.listerners.LogsManager;
 import org.bukkit.Location;
 import org.bukkit.inventory.ItemStack;
 
+import java.util.Date;
 import java.util.UUID;
 
 public class LogsDropItems extends Logs {
@@ -21,6 +22,15 @@ public class LogsDropItems extends Logs {
         LogsManager.getLogs().add(this);
     }
 
+    public LogsDropItems(UUID uuid, Date date, Location location, LogsType logsType, ItemStack itemStack, Location dropLocation) {
+        super(uuid, date, location, logsType);
+
+        this.itemStack = itemStack;
+        this.dropLocation = dropLocation;
+
+        LogsManager.getLogs__drop_items().add(this);
+        LogsManager.getLogs().add(this);
+    }
 
     public ItemStack getItemStack() {
         return itemStack;
@@ -36,13 +46,13 @@ public class LogsDropItems extends Logs {
      */
     @Override
     public String toString() {
-        return "LogsDropItems:{" +
+        return "LogsDropItems::{" +
                 "targetUUID=" + targetUUID +
                 ", date=" + date +
                 ", logsType=" + logsType +
                 ", location=" + location +
                 ", itemStack=" + itemStack +
                 ", dropLocation=" + dropLocation +
-                "},";
+                "},\n";
     }
 }

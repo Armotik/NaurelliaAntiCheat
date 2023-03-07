@@ -1,9 +1,11 @@
 package fr.armotik.naurelliaanticheat.logs;
 
+import fr.armotik.naurelliaanticheat.listerners.LogsManager;
 import org.bukkit.Location;
 import org.bukkit.Material;
 import org.bukkit.event.block.Action;
 
+import java.util.Date;
 import java.util.UUID;
 
 public class LogsBlockInteract extends Logs{
@@ -18,6 +20,17 @@ public class LogsBlockInteract extends Logs{
         this.blockLocation = blockLocation;
         this.action = action;
 
+        LogsManager.getLogs().add(this);
+    }
+
+    public LogsBlockInteract(UUID targetUUID, Date date, Location location, LogsType logsType, Material material, Location blockLocation, Action action) {
+        super(targetUUID, date, location, logsType);
+
+        this.material = material;
+        this.blockLocation = blockLocation;
+        this.action = action;
+
+        LogsManager.getLogs().add(this);
     }
 
     /**
@@ -27,7 +40,7 @@ public class LogsBlockInteract extends Logs{
      */
     @Override
     public String toString() {
-        return "LogsBlockInteract:{" +
+        return "LogsBlockInteract::{" +
                 "targetUUID=" + targetUUID +
                 ", date=" + date +
                 ", logsType=" + logsType +
@@ -35,7 +48,7 @@ public class LogsBlockInteract extends Logs{
                 ", material=" + material +
                 ", blockLocation=" + blockLocation +
                 ", action=" + action +
-                "},";
+                "},\n";
     }
 
     public Material getMaterial() {

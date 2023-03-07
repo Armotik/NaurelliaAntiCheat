@@ -1,7 +1,6 @@
 package fr.armotik.tests;
 
 import fr.armotik.naurelliaanticheat.listerners.EventManager;
-import org.bukkit.Location;
 import org.bukkit.Server;
 import org.bukkit.entity.Player;
 import org.junit.jupiter.api.BeforeEach;
@@ -17,7 +16,6 @@ public abstract class Tests {
     protected Player Armotik = mock(Player.class);
     protected Player Armotika = mock(Player.class);
     protected EventManager eventManager = new EventManager();
-    protected Location location = new Location(null, 0, 0, 0);
 
     @BeforeEach
     public void setUp() {

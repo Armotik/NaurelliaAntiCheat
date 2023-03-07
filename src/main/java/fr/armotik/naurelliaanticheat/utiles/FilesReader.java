@@ -1,18 +1,20 @@
 package fr.armotik.naurelliaanticheat.utiles;
 
-import fr.armotik.naurelliaanticheat.listerners.LogsManager;
-import fr.armotik.naurelliaanticheat.logs.Logs;
-import fr.armotik.naurelliaanticheat.logs.LogsChat;
-import fr.armotik.naurelliaanticheat.logs.LogsJoinQuit;
-import fr.armotik.naurelliaanticheat.logs.LogsType;
+import fr.armotik.naurelliaanticheat.logs.*;
 import org.bukkit.Bukkit;
 import org.bukkit.Location;
 import org.bukkit.World;
+import org.bukkit.entity.Player;
 
 import java.io.*;
+import java.sql.ResultSet;
+import java.sql.SQLException;
 import java.text.ParseException;
 import java.text.SimpleDateFormat;
-import java.util.*;
+import java.util.ArrayList;
+import java.util.Date;
+import java.util.List;
+import java.util.UUID;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 
@@ -25,162 +27,193 @@ public class FilesReader {
         throw new IllegalStateException("Utility Class");
     }
 
-    public static List<Logs> readJoinQuitLogs() {
+    public static boolean checkFileExist(String path) {
 
-        List<Logs> data = new ArrayList<>();
-        File file = new File("server_logs/players_logs/logs__join-quit.txt");
-        try {
-
-            FileInputStream inputStream = new FileInputStream(file);
-            InputStreamReader inputStreamReader = new InputStreamReader(inputStream);
-            BufferedReader reader = new BufferedReader(inputStreamReader);
-
-            String line;
-
-            while ((line = reader.readLine()) != null) {
-
-                String[] args = line.split(" - ");
-
-                SimpleDateFormat format = new SimpleDateFormat("EEE MMM dd HH:mm:ss zzz yyyy");
-                format.setTimeZone(TimeZone.getTimeZone("GMT"));
-                format.parse(args[0]);
-
-                UUID targetUUID = UUID.fromString(args[1]);
-
-                String[] locationPart = args[3].split(",");
-                locationPart[5] = locationPart[5].substring(0, locationPart[5].length() -1);
-                World world = Bukkit.getWorld(locationPart[0].substring(locationPart[0].indexOf("=") + 1));
-
-                double x = Double.parseDouble(locationPart[1].substring(locationPart[1].indexOf("=") + 1));
-                double y = Double.parseDouble(locationPart[2].substring(locationPart[2].indexOf("=") + 1));
-                double z = Double.parseDouble(locationPart[3].substring(locationPart[3].indexOf("=") + 1));
-                float pitch = Float.parseFloat(locationPart[4].substring(locationPart[4].indexOf("=") + 1));
-                float yaw = Float.parseFloat(locationPart[5].substring(locationPart[5].indexOf("=") + 1));
-
-                Location location = new Location(world, x, y, z, pitch, yaw);
-
-                switch (args[2].toUpperCase(Locale.ENGLISH)) {
-                    case "LOG__JOIN" -> {
-                        data.add(new LogsJoinQuit(targetUUID, location, LogsType.LOG__JOIN));
-                    }
-                    case "LOG__QUIT" -> {
-                        data.add(new LogsJoinQuit(targetUUID, location, LogsType.LOG__QUIT));
-                    }
-                }
-
-            }
-            reader.close();
-
-        } catch (FileNotFoundException e) {
-            ExceptionsManager.fileNotFoundExceptionLog(e);
-        } catch (IOException e) {
-            ExceptionsManager.ioExceptionLog(e);
-        } catch (ParseException e) {
-            ExceptionsManager.parseExceptionLog(e);
-        }
-
-        logger.log(Level.INFO, "[NaurelliaAntiCheat] -> FilesReader : successfully read logs");
-        return data;
+        File file = new File(path);
+        return file.exists();
     }
 
-    public static void writeLogs() {
+    public static void createFile(String s) {
 
-        List<Logs> logs__join_quit = LogsManager.getLogs__join_quit();
-        List<Logs> logs__chat = LogsManager.getLogs__chat();
-
-        if (logs__join_quit.isEmpty()) {
-
-            logger.log(Level.INFO, "[NaurelliaAntiCheat] -> FilesReader : unable to write Logs - logs join quit is empty");
-            return;
-        }
-
-        if (logs__chat.isEmpty()) {
-
-            logger.log(Level.INFO, "[NaurelliaAntiCheat] -> FilesReader : unable to write Logs - logs chat is empty");
-            return;
-        }
-
-        String folderPath = "server_logs/players_logs";
-        File folder = new File(folderPath);
-
-        if (!folder.exists()) {
-            if (folder.mkdirs()) {
-
-                logger.log(Level.INFO, "[NaurelliaAntiCheat] -> FilesReader : created server_logs/players_logs folder");
+        File file = new File(s);
+        try {
+            if (file.createNewFile()) {
+                logger.log(Level.INFO, "[NaurelliaAntiCheat] -> FilesReader : successfully created file " + s);
             }
+        } catch (IOException e) {
+            ExceptionsManager.ioExceptionLog(e);
+        }
+    }
+
+    public static void writeInFile(String s, String toString) {
+
+        File file = new File(s);
+        try {
+            BufferedWriter writer = new BufferedWriter(new FileWriter(file, true));
+            writer.flush();
+            writer.append(toString);
+            writer.close();
+        } catch (IOException e) {
+            ExceptionsManager.ioExceptionLog(e);
+        }
+    }
+
+    public static List<Logs> readLogs() {
+
+        List<Logs> logs = new ArrayList<>();
+
+        if (!checkFileExist("server_logs/players_logs/logs.txt")) {
+
+            logger.log(Level.INFO, "[NaurelliaAntiCheat] -> FilesReader : readLogs - file server_logs/players_logs/logs.txt not found");
+            return new ArrayList<>();
         }
 
-        logs__join_quit.forEach(log -> {
+        try {
+            BufferedReader reader = new BufferedReader(new FileReader("server_logs/players_logs/logs.txt"));
+            String line;
+            while ((line = reader.readLine()) != null) {
 
-            try {
+                String information = line.split("::")[1];
+                information = information.substring(1, information.length() - 2);
 
-                BufferedWriter writerJoinQuit = null;
+                String[] data = information.split(", ");
 
-                switch (log.getLogsType()) {
+                UUID targetUUID = null;
+                Date date = null;
+                LogsType logsType = null;
+                Location location = null;
 
-                    case LOG__JOIN, LOG__QUIT -> {
+                for (String datum : data) {
 
-                        writerJoinQuit = new BufferedWriter(new FileWriter("server_logs/players_logs/logs__join-quit.txt", false));
+                    String[] split = datum.split("=");
 
-                        writerJoinQuit.flush();
-
-                        writerJoinQuit
-                                .append(log.getDate().toString())
-                                .append(" - ").append(log.getTargetUUID().toString())
-                                .append(" - ").append(log.getLogsType().toString());
-
-                        if (log.getLocation() != null) {
-
-                            writerJoinQuit.append(" - ").append(log.getLocation().toString());
-                        }
-
-                        writerJoinQuit.append("\n");
-                        writerJoinQuit.close();
+                    if (split[0].equals("targetUUID")) {
+                        targetUUID = UUID.fromString(split[1]);
                     }
 
-                }
-            } catch (IOException e) {
-                ExceptionsManager.ioExceptionLog(e);
-            }
-        });
-
-        logs__chat.forEach(log -> {
-
-            try {
-
-                BufferedWriter writerChat = null;
-
-                switch (log.getLogsType()) {
-
-                    case LOG__JOIN, LOG__QUIT -> {
-
-                        assert log instanceof LogsChat;
-
-                        writerChat = new BufferedWriter(new FileWriter("server_logs/players_logs/logs__chat.txt", false));
-
-                        writerChat.flush();
-
-                        writerChat
-                                .append(log.getDate().toString())
-                                .append(" - ").append(log.getTargetUUID().toString())
-                                .append(" - ").append(((LogsChat) log).getMessage())
-                                .append(" - ").append(log.getLogsType().toString());
-
-                        if (log.getLocation() != null) {
-
-                            writerChat.append(" - ").append(log.getLocation().toString());
-                        }
-
-                        writerChat.append("\n");
-                        writerChat.close();
+                    if (split[0].equals("date")) {
+                        date = new SimpleDateFormat("dd-MM-yyyy HH:mm:ss").parse(split[1]);
+                        assert date != null;
                     }
 
-                }
-            } catch (IOException e) {
-                ExceptionsManager.ioExceptionLog(e);
-            }
-        });
+                    if (split[0].equals("location")) {
 
-        logger.log(Level.INFO, "[NaurelliaAntiCheat] -> FilesReader : successfully wrote logs");
+                        String[] locationData = split[1].split(",");
+
+                        World world = null;
+                        double x = 0;
+                        double y = 0;
+                        double z = 0;
+                        float yaw = 0;
+                        float pitch = 0;
+
+                        for (String locationDatum : locationData) {
+
+                            String[] locationDataSplit = locationDatum.split("=");
+
+                            if (locationDataSplit[0].startsWith("Location{world=CraftWorld{name=")) {
+
+                                String worldName = locationDataSplit[0].substring(31, locationDataSplit[0].length() - 1);
+                                world = Bukkit.getWorld(worldName);
+                            }
+
+                            if (locationDataSplit[0].equals("x")) {
+                                x = Double.parseDouble(locationDataSplit[1]);
+                            }
+
+                            if (locationDataSplit[0].equals("y")) {
+                                y = Double.parseDouble(locationDataSplit[1]);
+                            }
+
+                            if (locationDataSplit[0].equals("z")) {
+                                z = Double.parseDouble(locationDataSplit[1]);
+                            }
+
+                            if (locationDataSplit[0].equals("yaw")) {
+                                yaw = Float.parseFloat(locationDataSplit[1]);
+                            }
+
+                            if (locationDataSplit[0].equals("pitch")) {
+                                pitch = Float.parseFloat(locationDataSplit[1]);
+                            }
+                        }
+
+                        location = new Location(world, x, y, z, yaw, pitch);
+                    }
+
+                    if (split[0].equals("logsType")) {
+                        logsType = LogsType.valueOf(split[1]);
+
+                        switch (logsType) {
+
+                            case LOG__JOIN, LOG__QUIT -> new LogsJoinQuit(targetUUID, date, location, logsType);
+                            case LOG__COMMAND_SEND, LOG__MESSAGE_SEND -> {
+
+                                String message = "null";
+
+                                if (split[0].equals("message")) {
+                                    message = split[1];
+                                }
+
+                                new LogsChat(targetUUID, date, location, logsType, message);
+                            }
+                            case LOG__DEATH_PLAYER -> {
+
+                                Player killer = null;
+                                String deathMessage = null;
+                                String deathCause = null;
+
+                                if (split[0].equals("killer")) {
+
+                                    if (!split[1].equals("null")) {
+
+                                        String killerName = split[1].substring(13, split[1].length() - 1);
+                                        ResultSet res = Database.executeQuery("SELECT uuid FROM players WHERE name = '" + killerName + "'");
+
+                                        if (res == null) {
+                                            logger.log(Level.WARNING, "[NaurelliaAntiCheat] -> FilesReader : readLogs - res == null");
+                                            Database.close();
+                                            return new ArrayList<>();
+                                        }
+
+                                        if (res.next()) {
+                                            killer = Bukkit.getOfflinePlayer(UUID.fromString(res.getString("uuid"))).getPlayer();
+                                        } else {
+
+                                            logger.log(Level.WARNING, "[NaurelliaAntiCheat] -> FilesReader : readLogs - killer not found");
+                                        }
+
+                                        Database.close();
+                                    }
+                                }
+
+                                if (split[0].equals("deathMessage")) {
+                                    deathMessage = split[1];
+                                }
+
+                                if (split[0].equals("deathCause")) {
+                                    deathCause = split[1];
+                                }
+
+                                new LogsPlayerDeath(targetUUID, date, location, logsType, killer, deathMessage, deathCause);
+                            }
+                        }
+                    }
+                }
+            }
+            reader.close();
+        } catch (IOException e) {
+            ExceptionsManager.ioExceptionLog(e);
+            return new ArrayList<>();
+        } catch (ParseException e) {
+            ExceptionsManager.parseExceptionLog(e);
+            return new ArrayList<>();
+        } catch (SQLException e) {
+            ExceptionsManager.sqlExceptionLog(e);
+            Database.close();
+            return new ArrayList<>();
+        }
+
+        return logs;
     }
 }

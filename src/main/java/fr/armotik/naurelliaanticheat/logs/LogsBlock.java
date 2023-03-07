@@ -3,6 +3,7 @@ package fr.armotik.naurelliaanticheat.logs;
 import org.bukkit.Location;
 import org.bukkit.Material;
 
+import java.util.Date;
 import java.util.UUID;
 
 public class LogsBlock extends Logs{
@@ -15,6 +16,13 @@ public class LogsBlock extends Logs{
         this.blockLocation = blockLocation;
     }
 
+    public LogsBlock(UUID targetUUID, Date date, Location location, LogsType logsType, Material material, Location blockLocation) {
+        super(targetUUID, date, location, logsType);
+
+        this.material = material;
+        this.blockLocation = blockLocation;
+    }
+
     /**
      * Return the logs in a string
      *
@@ -22,14 +30,14 @@ public class LogsBlock extends Logs{
      */
     @Override
     public String toString() {
-        return "LogsBlock:{" +
+        return "LogsBlock::{" +
                 "targetUUID=" + targetUUID +
                 ", date=" + date +
                 ", logsType=" + logsType +
                 ", location=" + location +
                 ", material=" + material +
                 ", blockLocation=" + blockLocation +
-                "},";
+                "},\n";
     }
 
     public Material getMaterial() {

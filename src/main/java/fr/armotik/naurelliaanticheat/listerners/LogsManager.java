@@ -10,14 +10,14 @@ import java.util.List;
 public class LogsManager implements Listener {
 
     private static final List<Logs> logs = new ArrayList<>();
-    private static List<Logs> logs__join_quit = new ArrayList<>();
+    private static final List<Logs> logs__join_quit = new ArrayList<>();
     private final static List<Logs> logs__chat = new ArrayList<>();
     private final static List<Logs> logs__player_death = new ArrayList<>();
     private final static List<Logs> logs__drop_items = new ArrayList<>();
 
     public LogsManager() {
 
-        logs__join_quit = FilesReader.readJoinQuitLogs();
+        //logs__join_quit = FilesReader.readJoinQuitLogs();
     }
 
     public static List<Logs> getLogs__join_quit() {
@@ -38,5 +38,23 @@ public class LogsManager implements Listener {
 
     public static List<Logs> getLogs__drop_items() {
         return logs__drop_items;
+    }
+
+    public static void writeLogs(List<Logs> logs) {
+
+        if (!FilesReader.checkFileExist("server_logs/players_logs/logs.txt")) {
+
+                FilesReader.createFile("server_logs/players_logs/logs.txt");
+        }
+
+        logs.forEach(log -> {
+
+            FilesReader.writeInFile("server_logs/players_logs/logs.txt", log.toString());
+        });
+    }
+
+    public static List<Logs> readLogs() {
+
+        return FilesReader.readLogs();
     }
 }

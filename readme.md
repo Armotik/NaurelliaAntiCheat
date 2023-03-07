@@ -8,6 +8,7 @@
 1- Initial commit
 2- Added toString() method in the Logs.java class, added LogsBlock.java class, LogsBlockInteract.java class, LogsDropItem.java class, LogsPlayerDeath.java class. Modified LogsChat.java, LogsJoinQuit.java, LogsType.java, EventManager.java and LogsManager.java.
 3- Added Tests package, including Tests.java class, logs test package with TestLogsJoinQuit.java class and TestLogsPlayerDeath.jave class. Modified toString() method for classes which extends Logs.java class.
+4- Modified toString() method for classes which extends Logs.java class. Modified Files.java class, added checkFile(), readLogs() and writeLogs(Logs logs) methods.
 ```
 
 ---

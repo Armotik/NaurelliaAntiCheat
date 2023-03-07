@@ -13,13 +13,23 @@ public abstract class Logs {
     protected final LogsType logsType;
     protected final Location location;
 
-    public Logs(UUID targetUUID, Location location, LogsType logsType) {
+    public Logs(UUID targetUUID ,Location location, LogsType logsType) {
         this.targetUUID = targetUUID;
         this.location = location;
         this.logsType =  logsType;
 
         date = new Date();
     }
+
+    public Logs(UUID targetUUID, Date date ,Location location, LogsType logsType) {
+        this.targetUUID = targetUUID;
+        this.location = location;
+        this.logsType =  logsType;
+
+        this.date = date;
+    }
+
+
 
     public UUID getTargetUUID() {
         return targetUUID;

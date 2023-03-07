@@ -4,6 +4,7 @@ import fr.armotik.naurelliaanticheat.listerners.LogsManager;
 import org.bukkit.Location;
 import org.bukkit.entity.Player;
 
+import java.util.Date;
 import java.util.UUID;
 
 public class LogsPlayerDeath extends Logs {
@@ -14,6 +15,17 @@ public class LogsPlayerDeath extends Logs {
 
     public LogsPlayerDeath(UUID targetUUID, Location location, LogsType logsType, Player killer, String deathMessage, String deathCause) {
         super(targetUUID, location, logsType);
+
+        this.killer = killer;
+        this.deathMessage = deathMessage;
+        this.deathCause = deathCause;
+
+        LogsManager.getLogs__player_death().add(this);
+        LogsManager.getLogs().add(this);
+    }
+
+    public LogsPlayerDeath(UUID targetUUID, Date date, Location location, LogsType logsType, Player killer, String deathMessage, String deathCause) {
+        super(targetUUID, date, location, logsType);
 
         this.killer = killer;
         this.deathMessage = deathMessage;
@@ -42,7 +54,7 @@ public class LogsPlayerDeath extends Logs {
      */
     @Override
     public String toString() {
-        return "LogsPlayerDeath:{" +
+        return "LogsPlayerDeath::{" +
                 "targetUUID=" + targetUUID +
                 ", date=" + date +
                 ", logsType=" + logsType +
@@ -50,6 +62,6 @@ public class LogsPlayerDeath extends Logs {
                 ", killer=" + killer +
                 ", deathMessage='" + deathMessage + '\'' +
                 ", deathCause='" + deathCause + '\'' +
-                "},";
+                "},\n";
     }
 }
