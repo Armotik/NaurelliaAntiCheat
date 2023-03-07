@@ -14,47 +14,74 @@ public class LogsManager implements Listener {
     private final static List<Logs> logs__chat = new ArrayList<>();
     private final static List<Logs> logs__player_death = new ArrayList<>();
     private final static List<Logs> logs__drop_items = new ArrayList<>();
+    private final static List<Logs> logs__block = new ArrayList<>();
+    private final static List<Logs> logs__blockInteract = new ArrayList<>();
+    private final static List<Logs> logs__bed = new ArrayList<>();
 
+    /**
+     * Constructor
+     */
     public LogsManager() {
 
-        //logs__join_quit = FilesReader.readJoinQuitLogs();
+        FilesReader.readLogs();
     }
 
+    /**
+     * Get logs__join_quit
+     */
     public static List<Logs> getLogs__join_quit() {
         return logs__join_quit;
     }
 
+    /**
+     * Get logs__chat
+     */
     public static List<Logs> getLogs__chat() {
         return logs__chat;
     }
 
+    /**
+     * Get logs
+     */
     public static List<Logs> getLogs() {
         return logs;
     }
 
+    /**
+     * Get logs__player_death
+     */
     public static List<Logs> getLogs__player_death() {
         return logs__player_death;
     }
 
+    /**
+     * Get logs__drop_items
+     */
     public static List<Logs> getLogs__drop_items() {
         return logs__drop_items;
     }
 
-    public static void writeLogs(List<Logs> logs) {
+    /**
+     * Get logs__block
+     */
+    public static List<Logs> getLogs__block() {
 
-        if (!FilesReader.checkFileExist("server_logs/players_logs/logs.txt")) {
-
-                FilesReader.createFile("server_logs/players_logs/logs.txt");
-        }
-
-        logs.forEach(log -> {
-
-            FilesReader.writeInFile("server_logs/players_logs/logs.txt", log.toString());
-        });
+        return logs__block;
     }
 
-    public static List<Logs> readLogs() {
+    /**
+     * Get logs__blockInteract
+     */
+    public static List<Logs> getLogs__blockInteract() {
 
-        return FilesReader.readLogs();
+            return logs__blockInteract;
+    }
+
+    /**
+     * Get logs__bed
+     */
+    public static List<Logs> getLogs__bed() {
+
+        return logs__bed;
     }
 }

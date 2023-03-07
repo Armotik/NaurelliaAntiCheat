@@ -13,6 +13,15 @@ public class LogsPlayerDeath extends Logs {
     private final String deathMessage;
     private final String deathCause;
 
+    /**
+     * Constructor (without date)
+     * @param targetUUID target UUID
+     * @param location target location
+     * @param logsType logs type
+     * @param killer killer
+     * @param deathMessage death message
+     * @param deathCause death cause
+     */
     public LogsPlayerDeath(UUID targetUUID, Location location, LogsType logsType, Player killer, String deathMessage, String deathCause) {
         super(targetUUID, location, logsType);
 
@@ -24,6 +33,16 @@ public class LogsPlayerDeath extends Logs {
         LogsManager.getLogs().add(this);
     }
 
+    /**
+     * Constructor (with date)
+     * @param targetUUID target UUID
+     * @param date date
+     * @param location target location
+     * @param logsType logs type
+     * @param killer killer
+     * @param deathMessage death message
+     * @param deathCause death cause
+     */
     public LogsPlayerDeath(UUID targetUUID, Date date, Location location, LogsType logsType, Player killer, String deathMessage, String deathCause) {
         super(targetUUID, date, location, logsType);
 
@@ -35,14 +54,26 @@ public class LogsPlayerDeath extends Logs {
         LogsManager.getLogs().add(this);
     }
 
+    /**
+     * Return the killer
+     * @return Player
+     */
     public Player getKiller() {
         return killer;
     }
 
+    /**
+     * Return the death message
+     * @return String
+     */
     public String getDeathMessage() {
         return deathMessage;
     }
 
+    /**
+     * Return the death cause
+     * @return String
+     */
     public String getDeathCause() {
         return deathCause;
     }

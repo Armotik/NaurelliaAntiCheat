@@ -5,6 +5,7 @@ import fr.armotik.naurelliaanticheat.commands.TestCommand;
 import fr.armotik.naurelliaanticheat.listerners.EventManager;
 import fr.armotik.naurelliaanticheat.listerners.LogsManager;
 import fr.armotik.naurelliaanticheat.utiles.Database;
+import fr.armotik.naurelliaanticheat.utiles.FilesReader;
 import org.bukkit.plugin.java.JavaPlugin;
 
 import java.util.Objects;
@@ -58,7 +59,7 @@ public final class NaurelliaAntiCheat extends JavaPlugin {
     public void onDisable() {
         // Plugin shutdown logic
 
-        //FilesReader.writeLogs();
+        FilesReader.writeLogs();
         Database.closeAll();
     }
 }

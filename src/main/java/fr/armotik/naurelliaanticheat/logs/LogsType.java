@@ -10,4 +10,6 @@ public enum LogsType {
     LOG__PLACE_BLOCK,
     LOG__BREAK_BLOCK,
     LOG__INTERACT_BLOCK,
+    LOG__BED_ENTER,
+    LOG__BED_LEAVE,
 }

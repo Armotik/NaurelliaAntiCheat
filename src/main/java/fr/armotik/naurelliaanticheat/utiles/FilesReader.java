@@ -1,10 +1,14 @@
 package fr.armotik.naurelliaanticheat.utiles;
 
+import fr.armotik.naurelliaanticheat.listerners.LogsManager;
 import fr.armotik.naurelliaanticheat.logs.*;
 import org.bukkit.Bukkit;
 import org.bukkit.Location;
+import org.bukkit.Material;
 import org.bukkit.World;
 import org.bukkit.entity.Player;
+import org.bukkit.event.block.Action;
+import org.bukkit.inventory.ItemStack;
 
 import java.io.*;
 import java.sql.ResultSet;
@@ -27,12 +31,23 @@ public class FilesReader {
         throw new IllegalStateException("Utility Class");
     }
 
+    /**
+     * Check if the file exist
+     *
+     * @param path path of the file
+     * @return true if the file exist
+     */
     public static boolean checkFileExist(String path) {
 
         File file = new File(path);
-        return file.exists();
+        return !file.exists();
     }
 
+    /**
+     * Create a file
+     *
+     * @param s path of the file
+     */
     public static void createFile(String s) {
 
         File file = new File(s);
@@ -45,24 +60,59 @@ public class FilesReader {
         }
     }
 
-    public static void writeInFile(String s, String toString) {
+    /**
+     * Write in a file
+     */
+    public static void writeLogs() {
 
-        File file = new File(s);
-        try {
-            BufferedWriter writer = new BufferedWriter(new FileWriter(file, true));
-            writer.flush();
-            writer.append(toString);
-            writer.close();
-        } catch (IOException e) {
-            ExceptionsManager.ioExceptionLog(e);
+        if (FilesReader.checkFileExist("server_logs/players_logs/logs.txt")) {
+
+            FilesReader.createFile("server_logs/players_logs/logs.txt");
         }
+
+        File file = new File("server_logs/players_logs/logs.txt");
+
+        List<Logs> existingLogs = readLogs();
+
+        LogsManager.getLogs().forEach(log -> {
+
+            boolean exist = false;
+
+            for (Logs existingLog : existingLogs) {
+
+                if (existingLog.equals(log)) {
+
+                    exist = true;
+                    break;
+                }
+            }
+
+            if (!exist) {
+
+                try {
+                    BufferedWriter writer = new BufferedWriter(new FileWriter(file, true));
+                    writer.flush();
+                    writer.append(log.toString());
+                    writer.close();
+                } catch (IOException e) {
+                    ExceptionsManager.ioExceptionLog(e);
+                }
+            }
+        });
+
+        logger.log(Level.INFO, "[NaurelliaAntiCheat] -> FilesReader : writeLogs - logs written");
     }
 
+    /**
+     * Read the logs
+     *
+     * @return list of logs
+     */
     public static List<Logs> readLogs() {
 
         List<Logs> logs = new ArrayList<>();
 
-        if (!checkFileExist("server_logs/players_logs/logs.txt")) {
+        if (checkFileExist("server_logs/players_logs/logs.txt")) {
 
             logger.log(Level.INFO, "[NaurelliaAntiCheat] -> FilesReader : readLogs - file server_logs/players_logs/logs.txt not found");
             return new ArrayList<>();
@@ -80,124 +130,208 @@ public class FilesReader {
 
                 UUID targetUUID = null;
                 Date date = null;
-                LogsType logsType = null;
+                LogsType logsType;
                 Location location = null;
 
                 for (String datum : data) {
 
-                    String[] split = datum.split("=");
+                    String[] elements = datum.split(",(?![^{]*})|(?<=\\}),(?=\\w)");
+                    World world = null;
 
-                    if (split[0].equals("targetUUID")) {
-                        targetUUID = UUID.fromString(split[1]);
-                    }
+                    for (String ignored : elements) {
 
-                    if (split[0].equals("date")) {
-                        date = new SimpleDateFormat("dd-MM-yyyy HH:mm:ss").parse(split[1]);
-                        assert date != null;
-                    }
+                        String[] split = datum.split(",(?![^{]*})|(?<=\\}),(?=\\w)");
 
-                    if (split[0].equals("location")) {
-
-                        String[] locationData = split[1].split(",");
-
-                        World world = null;
-                        double x = 0;
-                        double y = 0;
-                        double z = 0;
-                        float yaw = 0;
-                        float pitch = 0;
-
-                        for (String locationDatum : locationData) {
-
-                            String[] locationDataSplit = locationDatum.split("=");
-
-                            if (locationDataSplit[0].startsWith("Location{world=CraftWorld{name=")) {
-
-                                String worldName = locationDataSplit[0].substring(31, locationDataSplit[0].length() - 1);
-                                world = Bukkit.getWorld(worldName);
-                            }
-
-                            if (locationDataSplit[0].equals("x")) {
-                                x = Double.parseDouble(locationDataSplit[1]);
-                            }
-
-                            if (locationDataSplit[0].equals("y")) {
-                                y = Double.parseDouble(locationDataSplit[1]);
-                            }
-
-                            if (locationDataSplit[0].equals("z")) {
-                                z = Double.parseDouble(locationDataSplit[1]);
-                            }
-
-                            if (locationDataSplit[0].equals("yaw")) {
-                                yaw = Float.parseFloat(locationDataSplit[1]);
-                            }
-
-                            if (locationDataSplit[0].equals("pitch")) {
-                                pitch = Float.parseFloat(locationDataSplit[1]);
-                            }
+                        if (split[0].equals("targetUUID")) {
+                            targetUUID = UUID.fromString(split[1]);
                         }
 
-                        location = new Location(world, x, y, z, yaw, pitch);
-                    }
+                        if (split[0].equals("date")) {
+                            date = new SimpleDateFormat("EEE MMM dd HH:mm:ss zzz yyyy").parse(split[1]);
+                            assert date != null;
+                        }
 
-                    if (split[0].equals("logsType")) {
-                        logsType = LogsType.valueOf(split[1]);
+                        if (split[0].equals("location")) {
 
-                        switch (logsType) {
+                            world = getWorldFromString(split[1]);
+                        }
 
-                            case LOG__JOIN, LOG__QUIT -> new LogsJoinQuit(targetUUID, date, location, logsType);
-                            case LOG__COMMAND_SEND, LOG__MESSAGE_SEND -> {
+                        if (split[0].matches("^x=-?\\d+(\\.\\d+)?,y=-?\\d+(\\.\\d+)?,z=-?\\d+(\\.\\d+)?,pitch=-?\\d+(\\.\\d+)?,yaw=-?\\d+(\\.\\d+)?$\n")) {
 
-                                String message = "null";
+                            String[] locationData = split[1].split(",");
+                            location = getLocationFromString(world, locationData);
+                        }
 
-                                if (split[0].equals("message")) {
-                                    message = split[1];
+                        if (split[0].equals("logsType")) {
+                            logsType = LogsType.valueOf(split[1]);
+
+                            switch (logsType) {
+
+                                case LOG__JOIN, LOG__QUIT -> new LogsJoinQuit(targetUUID, date, location, logsType);
+                                case LOG__BED_ENTER, LOG__BED_LEAVE -> {
+
+                                    Material material = null;
+                                    Location blockLocation = null;
+
+                                    if (split[0].equals("material")) {
+
+                                        material = Material.valueOf(split[1]);
+                                    }
+
+                                    if (split[0].equals("blockLocation")) {
+
+                                        world = getWorldFromString(split[1]);
+                                    }
+
+                                    if (split[0].matches("^x=-?\\d+(\\.\\d+)?,y=-?\\d+(\\.\\d+)?,z=-?\\d+(\\.\\d+)?,pitch=-?\\d+(\\.\\d+)?,yaw=-?\\d+(\\.\\d+)?$\n")) {
+
+                                        String[] locationData = split[1].split(",");
+                                        blockLocation = getLocationFromString(world, locationData);
+                                    }
+
+                                    new LogsBed(targetUUID, date, location, logsType, material, blockLocation);
                                 }
+                                case LOG__INTERACT_BLOCK -> {
 
-                                new LogsChat(targetUUID, date, location, logsType, message);
-                            }
-                            case LOG__DEATH_PLAYER -> {
+                                    Material material = null;
+                                    Location blockLocation = null;
+                                    Action action = null;
 
-                                Player killer = null;
-                                String deathMessage = null;
-                                String deathCause = null;
+                                    if (split[0].equals("material")) {
 
-                                if (split[0].equals("killer")) {
+                                        material = Material.valueOf(split[1]);
+                                    }
 
-                                    if (!split[1].equals("null")) {
+                                    if (split[0].equals("blockLocation")) {
 
-                                        String killerName = split[1].substring(13, split[1].length() - 1);
-                                        ResultSet res = Database.executeQuery("SELECT uuid FROM players WHERE name = '" + killerName + "'");
+                                        world = getWorldFromString(split[1]);
+                                    }
 
-                                        if (res == null) {
-                                            logger.log(Level.WARNING, "[NaurelliaAntiCheat] -> FilesReader : readLogs - res == null");
-                                            Database.close();
-                                            return new ArrayList<>();
-                                        }
+                                    if (split[0].matches("^x=-?\\d+(\\.\\d+)?,y=-?\\d+(\\.\\d+)?,z=-?\\d+(\\.\\d+)?,pitch=-?\\d+(\\.\\d+)?,yaw=-?\\d+(\\.\\d+)?$\n")) {
 
-                                        if (res.next()) {
-                                            killer = Bukkit.getOfflinePlayer(UUID.fromString(res.getString("uuid"))).getPlayer();
-                                        } else {
+                                        String[] locationData = split[1].split(",");
+                                        blockLocation = getLocationFromString(world, locationData);
+                                    }
 
-                                            logger.log(Level.WARNING, "[NaurelliaAntiCheat] -> FilesReader : readLogs - killer not found");
-                                        }
+                                    if (split[0].equals("action")) {
 
-                                        Database.close();
+                                        action = Action.valueOf(split[1]);
+                                    }
+
+                                    Logs log = new LogsBlockInteract(targetUUID, date, location, logsType, material, blockLocation, action);
+                                    logs.add(log);
+                                }
+                                case LOG__BREAK_BLOCK, LOG__PLACE_BLOCK -> {
+
+                                    Material material = null;
+                                    Location blockLocation = null;
+
+                                    if (split[0].equals("material")) {
+
+                                        material = Material.valueOf(split[1]);
+                                    }
+
+                                    if (split[0].equals("blockLocation")) {
+
+                                        world = getWorldFromString(split[1]);
+                                    }
+
+                                    if (split[0].matches("^x=-?\\d+(\\.\\d+)?,y=-?\\d+(\\.\\d+)?,z=-?\\d+(\\.\\d+)?,pitch=-?\\d+(\\.\\d+)?,yaw=-?\\d+(\\.\\d+)?$\n")) {
+
+                                        String[] locationData = split[1].split(",");
+                                        blockLocation = getLocationFromString(world, locationData);
+                                    }
+
+                                    Logs log = new LogsBlock(targetUUID, date, location, logsType, material, blockLocation);
+                                    logs.add(log);
+                                }
+                                case LOG__DROP_ITEM -> {
+
+                                    ItemStack itemStack = null;
+                                    Location dropLocation = null;
+                                    int amount = 0;
+
+                                    if (split[0].equals("itemStack")) {
+
+                                        String[] itemStackData = split[1].split(" x ");
+                                        String material = itemStackData[0].substring(11);
+                                        amount = Integer.parseInt(itemStackData[1].substring(2));
+
+                                        itemStack = new ItemStack(Material.valueOf(material), amount);
+                                    }
+
+                                    if (split[0].equals("dropLocation")) {
+
+                                        world = getWorldFromString(split[1]);
+                                    }
+
+                                    if (split[0].matches("^x=-?\\d+(\\.\\d+)?,y=-?\\d+(\\.\\d+)?,z=-?\\d+(\\.\\d+)?,pitch=-?\\d+(\\.\\d+)?,yaw=-?\\d+(\\.\\d+)?$\n")) {
+
+                                        String[] locationData = split[1].split(",");
+                                        dropLocation = getLocationFromString(world, locationData);
+                                    }
+
+                                    if (!(amount < 1 || itemStack.getType() == Material.AIR)) {
+
+                                        Logs log = new LogsDropItems(targetUUID, date, location, logsType, itemStack, dropLocation);
+                                        logs.add(log);
                                     }
                                 }
+                                case LOG__COMMAND_SEND, LOG__MESSAGE_SEND -> {
 
-                                if (split[0].equals("deathMessage")) {
-                                    deathMessage = split[1];
+                                    String message = "null";
+
+                                    if (split[0].equals("message")) {
+                                        message = split[1];
+                                    }
+
+                                    Logs log = new LogsChat(targetUUID, date, location, logsType, message);
+                                    logs.add(log);
                                 }
+                                case LOG__DEATH_PLAYER -> {
 
-                                if (split[0].equals("deathCause")) {
-                                    deathCause = split[1];
+                                    Player killer = null;
+                                    String deathMessage = null;
+                                    String deathCause = null;
+
+                                    if (split[0].equals("killer")) {
+
+                                        if (!split[1].equals("null")) {
+
+                                            String killerName = split[1].substring(13, split[1].length() - 1);
+                                            ResultSet res = Database.executeQuery("SELECT uuid FROM players WHERE name = '" + killerName + "'");
+
+                                            if (res == null) {
+                                                logger.log(Level.WARNING, "[NaurelliaAntiCheat] -> FilesReader : readLogs - res == null");
+                                                Database.close();
+                                                return new ArrayList<>();
+                                            }
+
+                                            if (res.next()) {
+                                                killer = Bukkit.getOfflinePlayer(UUID.fromString(res.getString("uuid"))).getPlayer();
+                                            } else {
+
+                                                logger.log(Level.WARNING, "[NaurelliaAntiCheat] -> FilesReader : readLogs - killer not found");
+                                            }
+
+                                            Database.close();
+                                        }
+                                    }
+
+                                    if (split[0].equals("deathMessage")) {
+                                        deathMessage = split[1];
+                                    }
+
+                                    if (split[0].equals("deathCause")) {
+                                        deathCause = split[1];
+                                    }
+
+                                    Logs log = new LogsPlayerDeath(targetUUID, date, location, logsType, killer, deathMessage, deathCause);
+                                    logs.add(log);
                                 }
-
-                                new LogsPlayerDeath(targetUUID, date, location, logsType, killer, deathMessage, deathCause);
                             }
                         }
+
                     }
                 }
             }
@@ -214,6 +348,69 @@ public class FilesReader {
             return new ArrayList<>();
         }
 
+        logger.log(Level.INFO, "[NaurelliaAntiCheat] -> FilesReader : readLogs - logs read");
         return logs;
+    }
+
+    /**
+     * Get world from string
+     *
+     * @param worldNamePath String
+     * @return World
+     */
+    private static World getWorldFromString(String worldNamePath) {
+
+        World world = null;
+
+        String worldName = worldNamePath.split("=")[2];
+        world = Bukkit.getWorld(worldName);
+
+        return world;
+    }
+
+    /**
+     * Get location from string
+     *
+     * @param locationData String[]
+     * @return Location
+     */
+    private static Location getLocationFromString(World world, String[] locationData) {
+
+        double x = 0;
+        double y = 0;
+        double z = 0;
+        float yaw = 0;
+        float pitch = 0;
+
+        for (String locationDatum : locationData) {
+
+            String[] locationDataSplit = locationDatum.split("=");
+
+            if (locationDataSplit[1].endsWith("}")) {
+                locationDataSplit[1] = locationDataSplit[1].substring(0, locationDataSplit[1].length() - 1);
+            }
+
+            if (locationDataSplit[0].equals("x")) {
+                x = Double.parseDouble(locationDataSplit[1]);
+            }
+
+            if (locationDataSplit[0].equals("y")) {
+                y = Double.parseDouble(locationDataSplit[1]);
+            }
+
+            if (locationDataSplit[0].equals("z")) {
+                z = Double.parseDouble(locationDataSplit[1]);
+            }
+
+            if (locationDataSplit[0].equals("yaw")) {
+                yaw = Float.parseFloat(locationDataSplit[1]);
+            }
+
+            if (locationDataSplit[0].equals("pitch")) {
+                pitch = Float.parseFloat(locationDataSplit[1]);
+            }
+        }
+
+        return new Location(world, x, y, z, yaw, pitch);
     }
 }
